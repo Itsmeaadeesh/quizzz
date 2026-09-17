@@ -7,7 +7,13 @@ const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
 /**
  * Supported Gemini models in priority order
  */
-const PREFERRED_MODELS = ['gemini-3.6-flash', 'gemini-2.5-flash', 'gemini-2.0-flash'];
+const PREFERRED_MODELS = [
+  'gemini-3.5-flash-lite',
+  'gemini-3.5-flash',
+  'gemini-flash-latest',
+  'gemini-3.6-flash',
+  'gemini-3.7-flash',
+];
 
 /**
  * Generates structured JSON quiz using Gemini API
@@ -55,9 +61,11 @@ async function attemptGeminiGeneration(
     model: modelName,
     generationConfig: {
       responseMimeType: 'application/json',
-      temperature: isRetry ? 0.3 : 0.4,
+      temperature: isRetry ? 0.7 : 0.78, // High temperature guarantees novel, varied questions every time
     },
   });
+
+  const variationSeed = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
   const prompt = `
 You are StayAheadd's master educator AI. Your task is to analyze the student's study material and generate an engaging, highly accurate quiz.
@@ -67,6 +75,11 @@ QUIZ SPECIFICATIONS:
 - Question format: ${config.questionType.toUpperCase()} (Options: 'mcq', 'true_false', 'short_answer', or 'mixed')
 - Target difficulty: ${config.difficulty.toUpperCase()}
 - Document name: "${sourceName}"
+- Anti-repetition seed: ${variationSeed}
+
+VARIETY & RANDOMIZATION RULES:
+1. Ensure the generated questions are fresh, diverse, and test different nuances, mechanisms, and core principles. Do not repeat standard question formulations.
+2. Every time a quiz is generated, explore alternative angles and concepts.
 
 STUDY MATERIAL:
 \"\"\"

@@ -183,23 +183,23 @@ export const AuthPage: React.FC = () => {
           {/* Toggle Login / Signup */}
           <div className="mt-6 text-center text-xs text-brand-muted dark:text-brand-dark-muted">
             {isSignUp ? (
-              <span>
+              <span className="inline-flex items-center">
                 Already have an account?{' '}
                 <button
                   type="button"
                   onClick={() => setIsSignUp(false)}
-                  className="text-brand-blue font-semibold hover:underline"
+                  className="text-brand-blue font-semibold hover:underline ml-1.5 p-2 min-h-[44px] inline-flex items-center"
                 >
                   Log in
                 </button>
               </span>
             ) : (
-              <span>
+              <span className="inline-flex items-center">
                 Don't have an account?{' '}
                 <button
                   type="button"
                   onClick={() => setIsSignUp(true)}
-                  className="text-brand-blue font-semibold hover:underline"
+                  className="text-brand-blue font-semibold hover:underline ml-1.5 p-2 min-h-[44px] inline-flex items-center"
                 >
                   Sign up for free
                 </button>

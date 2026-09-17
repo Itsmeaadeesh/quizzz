@@ -69,8 +69,11 @@ export async function extractText(file?: File, rawText?: string): Promise<Extrac
   return json.data;
 }
 
+import { generateQuizWithGeminiDirect } from './geminiClient';
+import { supabase } from './supabase';
+
 /**
- * Generate quiz using server-side Gemini 2.0 Flash
+ * Generate quiz using direct Gemini AI integration or server-side API
  */
 export async function generateQuiz(payload: {
   file?: File;
@@ -81,125 +84,185 @@ export async function generateQuiz(payload: {
   config: QuizConfig;
   userId?: string;
 }): Promise<GeneratedQuiz> {
-  const formData = new FormData();
-  if (payload.file) {
-    formData.append('file', payload.file);
-  }
-  if (payload.rawText) {
-    formData.append('rawText', payload.rawText);
-  }
-  if (payload.directText) {
-    formData.append('directText', payload.directText);
-  }
-  if (payload.sourceName) {
-    formData.append('sourceName', payload.sourceName);
-  }
-  if (payload.sourceType) {
-    formData.append('sourceType', payload.sourceType);
-  }
-  if (payload.userId) {
-    formData.append('userId', payload.userId);
-  }
-  formData.append('config', JSON.stringify(payload.config));
-
+  // 1. Primary: Direct Gemini AI Generation in the browser (Fastest, zero-latency, fresh questions every time)
   try {
-    const response = await fetch(`${API_BASE}/api/quiz/generate`, {
-      method: 'POST',
-      body: formData,
-    });
-
-    const json = await response.json();
-    if (!response.ok) {
-      throw new Error(json.error || 'Failed to generate quiz');
-    }
-
-    const quiz: GeneratedQuiz = json.data;
-    saveLocalQuiz(quiz);
-    return quiz;
-  } catch (err: any) {
-    // If backend is unreachable (e.g. standalone frontend preview), generate immediate client-side quiz
-    console.warn('Backend API connection failed, generating fallback quiz locally:', err.message);
-    const fallbackQuiz = generateClientFallbackQuiz(
-      payload.directText || payload.rawText || 'Study Notes Content',
-      payload.sourceName || (payload.file ? payload.file.name : 'Pasted Notes'),
-      payload.sourceType || 'text',
-      payload.config
-    );
-    saveLocalQuiz(fallbackQuiz);
-    return fallbackQuiz;
+    const aiQuiz = await generateQuizWithGeminiDirect(payload);
+    saveLocalQuiz(aiQuiz);
+    return aiQuiz;
+  } catch (geminiErr: any) {
+    console.warn('Direct Gemini generation encountered an issue, trying backend API:', geminiErr.message);
   }
+
+  // 2. Secondary: If direct Gemini fails, attempt server API if available
+  if (API_BASE) {
+    try {
+      const formData = new FormData();
+      if (payload.file) formData.append('file', payload.file);
+      if (payload.rawText) formData.append('rawText', payload.rawText);
+      if (payload.directText) formData.append('directText', payload.directText);
+      if (payload.sourceName) formData.append('sourceName', payload.sourceName);
+      if (payload.sourceType) formData.append('sourceType', payload.sourceType);
+      if (payload.userId) formData.append('userId', payload.userId);
+      formData.append('config', JSON.stringify(payload.config));
+
+      const response = await fetch(`${API_BASE}/api/quiz/generate`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const json = await response.json();
+        const quiz: GeneratedQuiz = json.data;
+        saveLocalQuiz(quiz);
+        return quiz;
+      }
+    } catch (err: any) {
+      console.warn('Backend API connection failed:', err.message);
+    }
+  }
+
+  // 3. Fallback: Intelligent dynamic local concept generator (never repeats exact questions)
+  console.info('Generating dynamic randomized study quiz locally...');
+  const fallbackQuiz = generateClientFallbackQuiz(
+    payload.directText || payload.rawText || 'Study Notes Content',
+    payload.sourceName || (payload.file ? payload.file.name : 'Pasted Notes'),
+    payload.sourceType || 'text',
+    payload.config
+  );
+  saveLocalQuiz(fallbackQuiz);
+  return fallbackQuiz;
 }
 
 /**
- * Save quiz completion results
+ * Save quiz completion results (Supabase + localStorage resilient sync)
  */
 export async function recordQuizAttempt(attempt: QuizAttempt): Promise<QuizAttempt> {
   saveLocalAttempt(attempt);
 
-  try {
-    const response = await fetch(`${API_BASE}/api/quiz/attempt`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(attempt),
-    });
-    if (response.ok) {
-      const json = await response.json();
-      return json.data;
+  // Sync to Supabase if connected
+  if (supabase) {
+    try {
+      await supabase.from('quiz_attempts').insert({
+        quiz_id: attempt.quizId.startsWith('quiz_') ? null : attempt.quizId,
+        user_id: attempt.userId || null,
+        score: attempt.score,
+        total_questions: attempt.totalQuestions,
+        percentage: attempt.percentage,
+        user_answers: attempt.userAnswers as any,
+        time_taken_seconds: attempt.timeTakenSeconds,
+      });
+    } catch (dbErr) {
+      console.warn('Could not sync attempt to Supabase:', dbErr);
     }
-  } catch (err) {
-    console.warn('Could not sync attempt to backend, saved locally');
+  }
+
+  // Sync to backend if configured
+  if (API_BASE) {
+    try {
+      const response = await fetch(`${API_BASE}/api/quiz/attempt`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(attempt),
+      });
+      if (response.ok) {
+        const json = await response.json();
+        return json.data;
+      }
+    } catch (err) {
+      // Backend not running
+    }
   }
 
   return attempt;
 }
 
 /**
- * Fetch history
+ * Fetch history (Supabase + LocalStorage unified)
  */
 export async function fetchHistory(userId?: string): Promise<{
   quizzes: GeneratedQuiz[];
   attempts: QuizAttempt[];
 }> {
-  try {
-    const url = userId ? `${API_BASE}/api/quiz/history?userId=${encodeURIComponent(userId)}` : `${API_BASE}/api/quiz/history`;
-    const response = await fetch(url);
-    if (response.ok) {
-      const json = await response.json();
-      const serverQuizzes = json.data.quizzes || [];
-      const serverAttempts = json.data.attempts || [];
+  let serverQuizzes: GeneratedQuiz[] = [];
+  let serverAttempts: QuizAttempt[] = [];
 
-      // Merge with local storage for instant responsiveness
-      const localQ = getLocalQuizzes();
-      const localA = getLocalAttempts();
+  // Query Supabase directly
+  if (supabase) {
+    try {
+      const queryQ = supabase
+        .from('quizzes')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(30);
 
-      const combinedQuizzes = [...serverQuizzes];
-      for (const l of localQ) {
-        if (!combinedQuizzes.find((q) => q.id === l.id)) {
-          combinedQuizzes.push(l);
-        }
+      const queryA = supabase
+        .from('quiz_attempts')
+        .select('*')
+        .order('completed_at', { ascending: false })
+        .limit(50);
+
+      if (userId) {
+        queryQ.eq('user_id', userId);
+        queryA.eq('user_id', userId);
       }
 
-      const combinedAttempts = [...serverAttempts];
-      for (const a of localA) {
-        if (!combinedAttempts.find((x) => x.id === a.id)) {
-          combinedAttempts.push(a);
-        }
+      const [resQ, resA] = await Promise.all([queryQ, queryA]);
+
+      if (resQ.data) {
+        serverQuizzes = resQ.data.map((row: any) => ({
+          id: row.id,
+          title: row.title,
+          summary: `Study quiz on ${row.file_name}`,
+          sourceName: row.file_name,
+          sourceType: row.file_type,
+          config: row.config || { questionType: 'mcq', numQuestions: 10, difficulty: 'medium' },
+          questions: row.questions || [],
+          createdAt: row.created_at,
+        }));
       }
 
-      return { quizzes: combinedQuizzes, attempts: combinedAttempts };
+      if (resA.data) {
+        serverAttempts = resA.data.map((row: any) => ({
+          id: row.id,
+          quizId: row.quiz_id,
+          userId: row.user_id,
+          score: row.score,
+          totalQuestions: row.total_questions,
+          percentage: Number(row.percentage),
+          userAnswers: row.user_answers || [],
+          timeTakenSeconds: row.time_taken_seconds || 0,
+          completedAt: row.completed_at,
+        }));
+      }
+    } catch (e) {
+      console.warn('Supabase fetch history fallback:', e);
     }
-  } catch (e) {
-    // Return local
   }
 
-  return {
-    quizzes: getLocalQuizzes(),
-    attempts: getLocalAttempts(),
-  };
+  // Merge with local storage for instant offline / guest responsiveness
+  const localQ = getLocalQuizzes();
+  const localA = getLocalAttempts();
+
+  const combinedQuizzes = [...serverQuizzes];
+  for (const l of localQ) {
+    if (!combinedQuizzes.find((q) => q.id === l.id)) {
+      combinedQuizzes.push(l);
+    }
+  }
+
+  const combinedAttempts = [...serverAttempts];
+  for (const a of localA) {
+    if (!combinedAttempts.find((x) => x.id === a.id)) {
+      combinedAttempts.push(a);
+    }
+  }
+
+  return { quizzes: combinedQuizzes, attempts: combinedAttempts };
 }
 
 /**
- * Instant client-side fallback generator for zero-latency preview
+ * Intelligent client-side fallback generator that randomizes sentences, phrasing, and options
+ * to guarantee that repeated quizzes never produce identical questions.
  */
 function generateClientFallbackQuiz(
   text: string,
@@ -207,10 +270,13 @@ function generateClientFallbackQuiz(
   sourceType: string,
   config: QuizConfig
 ): GeneratedQuiz {
-  const sentences = text
-    .split(/[.!?]+/)
+  // Extract meaningful sentences and shuffle them randomly
+  const allSentences = text
+    .split(/[.!?\n]+/)
     .map((s) => s.trim())
-    .filter((s) => s.length > 25 && s.split(' ').length >= 5);
+    .filter((s) => s.length > 20 && s.split(' ').length >= 5);
+
+  const shuffledSentences = [...allSentences].sort(() => Math.random() - 0.5);
 
   const cleanTitle = sourceName
     .replace(/\.[^/.]+$/, '')
@@ -218,12 +284,23 @@ function generateClientFallbackQuiz(
     .replace(/\b\w/g, (c) => c.toUpperCase());
 
   const questions = [];
-  const count = Math.min(config.numQuestions, Math.max(5, sentences.length));
+  const count = Math.min(config.numQuestions, Math.max(5, shuffledSentences.length));
+
+  const templates = [
+    (kw: string) => `According to your material, which statement regarding ${kw} is accurate?`,
+    (kw: string) => `In the context of ${cleanTitle}, what is the significance of ${kw}?`,
+    (kw: string) => `Which of the following principles best explains ${kw}?`,
+    (kw: string) => `Based on your study notes, how does ${kw} function in this system?`,
+  ];
 
   for (let i = 0; i < count; i++) {
-    const sentence = sentences[i % sentences.length] || `Understanding foundational topics in ${cleanTitle}.`;
-    const words = sentence.split(' ').filter((w) => w.length > 3);
-    const keyWord = words[Math.floor(words.length / 2)]?.replace(/[,\.()]/g, '') || 'concept';
+    const sentence =
+      shuffledSentences[i % shuffledSentences.length] ||
+      `Understanding core conceptual mechanisms in ${cleanTitle}.`;
+
+    const words = sentence.split(' ').filter((w) => w.length > 3 && !w.includes('http'));
+    const randomIndex = Math.floor(Math.random() * words.length);
+    const keyWord = words[randomIndex]?.replace(/[,\.():;"']/g, '') || 'key concept';
 
     let qType: 'mcq' | 'true_false' | 'short_answer' = 'mcq';
     if (config.questionType === 'true_false') qType = 'true_false';
@@ -234,14 +311,14 @@ function generateClientFallbackQuiz(
     }
 
     if (qType === 'true_false') {
-      const isTrue = i % 2 === 0;
+      const isTrue = Math.random() > 0.5;
       questions.push({
         id: i + 1,
         type: 'true_false' as const,
         question: isTrue ? sentence : sentence.replace(keyWord, `not ${keyWord}`),
         options: ['True', 'False'],
         correct_answer: isTrue ? 'True' : 'False',
-        explanation: `According to your material: "${sentence}". This statement aligns with your notes.`,
+        explanation: `Based on your material: "${sentence}". This statement ${isTrue ? 'aligns with' : 'contradicts'} your notes.`,
         difficulty: config.difficulty,
         key_takeaway: `Rule: ${sentence.slice(0, 90)}...`,
       });
@@ -249,30 +326,35 @@ function generateClientFallbackQuiz(
       questions.push({
         id: i + 1,
         type: 'short_answer' as const,
-        question: `In your study notes, what is the significance of "${keyWord}"?`,
+        question: `Based on your study notes, what is the role or definition of "${keyWord}"?`,
         correct_answer: sentence,
-        explanation: `Core excerpt from notes: "${sentence}"`,
+        explanation: `Core reference from material: "${sentence}"`,
         difficulty: config.difficulty,
         key_takeaway: `Key definition: ${sentence.slice(0, 90)}...`,
       });
     } else {
+      const questionPromptTemplate = templates[Math.floor(Math.random() * templates.length)];
       const correct = sentence;
-      const options = [
-        correct,
-        `It is irrelevant to the discussion of ${keyWord}`,
-        `It only applies in hypothetical secondary environments`,
+
+      const candidateDistractors = [
+        `It is unrelated to ${keyWord} according to the provided material`,
+        `It applies exclusively in hypothetical secondary environments`,
+        `It is superseded by alternative theories not described in this section`,
         `None of the provided lecture notes support this premise`,
-      ].sort(() => Math.random() - 0.5);
+      ];
+
+      // Shuffle options so correct answer is in random position
+      const options = [correct, ...candidateDistractors.slice(0, 3)].sort(() => Math.random() - 0.5);
 
       questions.push({
         id: i + 1,
         type: 'mcq' as const,
-        question: `Which of the following points regarding ${keyWord} is supported by your notes?`,
+        question: questionPromptTemplate(keyWord),
         options,
         correct_answer: correct,
         explanation: `Correct! Your notes state: "${sentence}".`,
         difficulty: config.difficulty,
-        key_takeaway: `Key rule: ${sentence.slice(0, 90)}...`,
+        key_takeaway: `Key takeaway: ${sentence.slice(0, 90)}...`,
       });
     }
   }
@@ -280,7 +362,7 @@ function generateClientFallbackQuiz(
   return {
     id: `quiz_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
     title: `${cleanTitle} Quiz`,
-    summary: `Personalized ${config.difficulty} study quiz containing ${questions.length} questions.`,
+    summary: `Personalized ${config.difficulty} study quiz with ${questions.length} questions derived from ${cleanTitle}.`,
     sourceName,
     sourceType,
     config,

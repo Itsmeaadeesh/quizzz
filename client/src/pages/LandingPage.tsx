@@ -164,7 +164,7 @@ export const LandingPage: React.FC = () => {
                       </span>
                       <button
                         onClick={() => handleTrySample(file)}
-                        className="btn-pill-primary text-xs py-1.5 px-3.5"
+                        className="btn-pill-primary text-xs py-2 px-4 min-h-[44px] flex items-center justify-center"
                       >
                         Test quiz
                       </button>
@@ -358,7 +358,7 @@ export const LandingPage: React.FC = () => {
                   <button
                     key={format.id}
                     onClick={() => setActiveFormatPreview(format.id as any)}
-                    className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all ${
+                    className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all min-h-[44px] flex items-center ${
                       activeFormatPreview === format.id
                         ? 'bg-brand-blue text-white shadow-pill'
                         : 'bg-slate-100 dark:bg-brand-dark-surface text-brand-muted dark:text-brand-dark-muted hover:bg-slate-200 dark:hover:bg-brand-dark-card'

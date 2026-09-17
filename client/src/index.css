@@ -4,12 +4,18 @@
 
 @layer base {
   :root {
-    --brand-blue: #22C3F4;
+    --brand-blue: #29B6E8;
     --brand-blue-dark: #1C8FBF;
     --brand-orange: #FAA722;
     --brand-ink: #14181F;
     --brand-muted: #5B6472;
     --brand-border: #E7ECF1;
+  }
+
+  /* Tap highlight flash removal */
+  * {
+    -webkit-tap-highlight-color: transparent;
+    box-sizing: border-box;
   }
 
   body {
@@ -25,12 +31,22 @@
     background-color: #0B0F17;
     color: #F1F5F9;
   }
+
+  /* iOS Safari font-size zoom prevention: inputs must be at least 16px on mobile */
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+  @screen md {
+    input, textarea, select {
+      font-size: 0.875rem !important; /* 14px on desktop where appropriate */
+    }
+  }
 }
 
 /* Light dotted pattern */
 .bg-dots-pattern {
   background-color: #FFFFFF;
-  background-image: radial-gradient(#22C3F4 0.75px, transparent 0.75px), radial-gradient(#22C3F4 0.75px, #FFFFFF 0.75px);
+  background-image: radial-gradient(#29B6E8 0.75px, transparent 0.75px), radial-gradient(#29B6E8 0.75px, #FFFFFF 0.75px);
   background-size: 24px 24px;
   background-position: 0 0, 12px 12px;
 }
@@ -38,14 +54,14 @@
 /* Dark dotted pattern */
 .dark .bg-dots-pattern {
   background-color: #0B0F17;
-  background-image: radial-gradient(rgba(34, 195, 244, 0.25) 0.75px, transparent 0.75px), radial-gradient(rgba(34, 195, 244, 0.25) 0.75px, #0B0F17 0.75px);
+  background-image: radial-gradient(rgba(41, 182, 232, 0.25) 0.75px, transparent 0.75px), radial-gradient(rgba(41, 182, 232, 0.25) 0.75px, #0B0F17 0.75px);
   background-size: 24px 24px;
   background-position: 0 0, 12px 12px;
 }
 
-/* Custom Pill Button Styles */
+/* Custom Pill Button Styles with minimum 44px touch height on mobile */
 .btn-pill {
-  @apply inline-flex items-center justify-center font-medium rounded-full px-6 py-3 transition-all duration-200 cursor-pointer text-sm md:text-base select-none;
+  @apply inline-flex items-center justify-center font-medium rounded-full px-6 py-3 transition-all duration-200 cursor-pointer text-sm md:text-base select-none min-h-[44px];
 }
 
 .btn-pill-primary {
@@ -69,9 +85,65 @@
   @apply rounded-2xl border border-brand-border bg-white p-6 shadow-soft transition-all duration-200 hover:shadow-soft-hover hover:border-brand-blue/30 dark:bg-brand-dark-card dark:border-brand-dark-border dark:shadow-dark-soft dark:hover:shadow-dark-hover dark:hover:border-brand-blue/40;
 }
 
+/* Safe area utilities for iPhone notches and home indicators */
+.pb-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+}
+
+.pb-safe-nav {
+  padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+.pt-safe {
+  padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
+}
+
+/* Pull to refresh prevention during active flows */
+.prevent-pull-refresh {
+  overscroll-behavior-y: contain;
+}
+
+/* Minimum 44px touch target utility */
+.touch-min {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/* Brand Skeleton Shimmer */
+@keyframes brand-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-brand {
+  background: linear-gradient(
+    90deg,
+    rgba(231, 236, 241, 0.7) 25%,
+    rgba(41, 182, 232, 0.15) 37%,
+    rgba(231, 236, 241, 0.7) 63%
+  );
+  background-size: 200% 100%;
+  animation: brand-shimmer 1.4s ease-in-out infinite;
+}
+
+.dark .skeleton-brand {
+  background: linear-gradient(
+    90deg,
+    rgba(26, 34, 48, 0.7) 25%,
+    rgba(41, 182, 232, 0.25) 37%,
+    rgba(26, 34, 48, 0.7) 63%
+  );
+  background-size: 200% 100%;
+  animation: brand-shimmer 1.4s ease-in-out infinite;
+}
+
 /* Accessibility: focus ring */
 *:focus-visible {
-  outline: 2px solid #22C3F4;
+  outline: 2px solid #29B6E8;
   outline-offset: 2px;
 }
 
