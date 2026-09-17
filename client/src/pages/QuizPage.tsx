@@ -45,12 +45,12 @@ export const QuizPage: React.FC = () => {
   if (!quiz || !quiz.questions || quiz.questions.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-dots-pattern">
-        <div className="card-soft text-center p-8 max-w-md">
-          <div className="w-12 h-12 rounded-full bg-brand-blue-light text-brand-blue mx-auto flex items-center justify-center mb-4">
+        <div className="card-soft text-center p-8 max-w-md bg-white dark:bg-brand-dark-card border border-brand-border dark:border-brand-dark-border">
+          <div className="w-12 h-12 rounded-full bg-brand-blue-light dark:bg-brand-blue/15 text-brand-blue mx-auto flex items-center justify-center mb-4">
             <BookOpen className="w-6 h-6 animate-pulse" />
           </div>
-          <h2 className="text-xl font-semibold text-brand-ink mb-2">Preparing your study session…</h2>
-          <p className="text-sm text-brand-muted">Loading your quiz questions and study materials.</p>
+          <h2 className="text-xl font-semibold text-brand-ink dark:text-white mb-2">Preparing your study session…</h2>
+          <p className="text-sm text-brand-muted dark:text-brand-dark-muted">Loading your quiz questions and study materials.</p>
         </div>
       </div>
     );
@@ -142,30 +142,30 @@ export const QuizPage: React.FC = () => {
       userAnswers.find((a) => a.questionId === currentQ.id)?.isCorrect);
 
   return (
-    <div className="min-h-screen bg-dots-pattern py-8 md:py-14">
+    <div className="min-h-screen bg-dots-pattern py-8 md:py-14 transition-colors">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header bar */}
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <div className="inline-flex items-center gap-2 text-xs font-semibold text-brand-muted">
-              <span className="max-w-[200px] sm:max-w-xs truncate">{quiz.title}</span>
+            <div className="inline-flex items-center gap-2 text-xs font-semibold text-brand-muted dark:text-brand-dark-muted">
+              <span className="max-w-[200px] sm:max-w-xs truncate text-brand-ink dark:text-slate-200">{quiz.title}</span>
               <span>•</span>
               <span className="capitalize">{currentQ.difficulty} difficulty</span>
             </div>
-            <div className="text-sm font-semibold text-brand-ink mt-0.5">
+            <div className="text-sm font-semibold text-brand-ink dark:text-white mt-0.5">
               Question {currentIndex + 1} of {totalQuestions}
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="text-xs font-medium text-brand-muted bg-white px-3 py-1 rounded-full border border-brand-border">
-              Score: {userAnswers.filter((a) => a.isCorrect).length} / {userAnswers.length}
+            <span className="text-xs font-medium text-brand-ink dark:text-slate-200 bg-white dark:bg-brand-dark-surface px-3 py-1 rounded-full border border-brand-border dark:border-brand-dark-border shadow-xs">
+              Score: <strong className="text-brand-blue">{userAnswers.filter((a) => a.isCorrect).length}</strong> / {userAnswers.length}
             </span>
           </div>
         </div>
 
         {/* Animated Progress Bar */}
-        <div className="w-full bg-slate-200/80 h-2 rounded-full overflow-hidden mb-8">
+        <div className="w-full bg-slate-200/80 dark:bg-slate-800 h-2 rounded-full overflow-hidden mb-8">
           <div
             className="bg-brand-blue h-full transition-all duration-300 rounded-full"
             style={{ width: `${progressPercentage}%` }}
@@ -173,8 +173,8 @@ export const QuizPage: React.FC = () => {
         </div>
 
         {/* Active Question Card */}
-        <div className="card-soft bg-white p-6 sm:p-10 shadow-lg border-brand-border relative">
-          <div className="mb-4 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-brand-muted text-xs font-medium">
+        <div className="card-soft bg-white dark:bg-brand-dark-card p-6 sm:p-10 shadow-lg border-brand-border dark:border-brand-dark-border relative">
+          <div className="mb-4 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-brand-dark-surface text-brand-muted dark:text-slate-300 text-xs font-medium border border-transparent dark:border-brand-dark-border">
             <HelpCircle className="w-3.5 h-3.5 text-brand-blue" />
             <span className="capitalize">
               {currentQ.type === 'mcq'
@@ -185,7 +185,7 @@ export const QuizPage: React.FC = () => {
             </span>
           </div>
 
-          <h2 className="text-xl sm:text-2xl font-normal text-brand-ink leading-relaxed mb-8">
+          <h2 className="text-xl sm:text-2xl font-normal text-brand-ink dark:text-white leading-relaxed mb-8">
             {currentQ.question}
           </h2>
 
@@ -198,17 +198,17 @@ export const QuizPage: React.FC = () => {
                   option.trim().toLowerCase() === currentQ.correct_answer.trim().toLowerCase();
 
                 let buttonStyles =
-                  'border-brand-border bg-white text-brand-ink hover:border-brand-blue/50 hover:bg-brand-blue-subtle/30';
+                  'border-brand-border dark:border-brand-dark-border bg-white dark:bg-brand-dark-surface text-brand-ink dark:text-slate-100 hover:border-brand-blue/50 dark:hover:border-brand-blue/70 hover:bg-brand-blue-subtle/30 dark:hover:bg-brand-dark-card shadow-xs';
 
                 if (isSubmitted) {
                   if (isCorrectOption) {
                     buttonStyles =
-                      'border-emerald-500 bg-emerald-50/90 text-emerald-950 font-medium ring-2 ring-emerald-500/30';
+                      'border-emerald-500 bg-emerald-50/90 dark:bg-emerald-950/40 text-emerald-950 dark:text-emerald-200 font-medium ring-2 ring-emerald-500/30';
                   } else if (isSelected && !isCorrectOption) {
                     buttonStyles =
-                      'border-rose-400 bg-rose-50/90 text-rose-950 font-medium ring-2 ring-rose-400/30';
+                      'border-rose-400 bg-rose-50/90 dark:bg-rose-950/40 text-rose-950 dark:text-rose-200 font-medium ring-2 ring-rose-400/30';
                   } else {
-                    buttonStyles = 'border-brand-border bg-slate-50 text-brand-muted opacity-60';
+                    buttonStyles = 'border-brand-border dark:border-brand-dark-border/40 bg-slate-50 dark:bg-brand-dark-surface/40 text-brand-muted dark:text-slate-400 opacity-60';
                   }
                 }
 
@@ -227,7 +227,7 @@ export const QuizPage: React.FC = () => {
                             ? 'bg-emerald-500 text-white border-emerald-500'
                             : isSubmitted && isSelected && !isCorrectOption
                             ? 'bg-rose-500 text-white border-rose-500'
-                            : 'border-brand-border bg-slate-50 text-brand-muted group-hover:border-brand-blue group-hover:text-brand-blue'
+                            : 'border-brand-border dark:border-brand-dark-border bg-slate-50 dark:bg-brand-dark-card text-brand-muted dark:text-slate-300 group-hover:border-brand-blue group-hover:text-brand-blue'
                         }`}
                       >
                         {String.fromCharCode(65 + idx)}
@@ -236,7 +236,7 @@ export const QuizPage: React.FC = () => {
                     </div>
 
                     {isSubmitted && isCorrectOption && (
-                      <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                      <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
                     )}
                     {isSubmitted && isSelected && !isCorrectOption && (
                       <XCircle className="w-5 h-5 text-rose-500 flex-shrink-0" />
@@ -257,7 +257,7 @@ export const QuizPage: React.FC = () => {
                     value={shortAnswerInput}
                     onChange={(e) => setShortAnswerInput(e.target.value)}
                     placeholder="Type your explanation or response here..."
-                    className="w-full p-4 rounded-2xl border border-brand-border text-sm sm:text-base focus:border-brand-blue focus:ring-1 focus:ring-brand-blue"
+                    className="w-full p-4 rounded-2xl border border-brand-border dark:border-brand-dark-border bg-white dark:bg-brand-dark-surface text-brand-ink dark:text-white text-sm sm:text-base focus:border-brand-blue focus:ring-1 focus:ring-brand-blue"
                   />
                   <button
                     type="submit"
@@ -269,37 +269,37 @@ export const QuizPage: React.FC = () => {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  <div className="p-4 rounded-xl border border-brand-border bg-slate-50">
-                    <div className="text-xs font-semibold text-brand-muted mb-1">Your answer:</div>
-                    <div className="text-sm text-brand-ink">{shortAnswerInput}</div>
+                  <div className="p-4 rounded-xl border border-brand-border dark:border-brand-dark-border bg-slate-50 dark:bg-brand-dark-surface">
+                    <div className="text-xs font-semibold text-brand-muted dark:text-brand-dark-muted mb-1">Your answer:</div>
+                    <div className="text-sm text-brand-ink dark:text-white">{shortAnswerInput}</div>
                   </div>
-                  <div className="p-4 rounded-xl border border-brand-blue/30 bg-brand-blue-light/40">
-                    <div className="text-xs font-semibold text-brand-blue-dark mb-1">Model answer:</div>
-                    <div className="text-sm text-brand-ink">{currentQ.correct_answer}</div>
+                  <div className="p-4 rounded-xl border border-brand-blue/30 bg-brand-blue-light/40 dark:bg-brand-blue/15">
+                    <div className="text-xs font-semibold text-brand-blue-dark dark:text-brand-blue mb-1">Model answer:</div>
+                    <div className="text-sm text-brand-ink dark:text-white">{currentQ.correct_answer}</div>
                   </div>
                 </div>
               )}
             </form>
           )}
 
-          {/* Explanation */}
+          {/* Explanation Card */}
           {isSubmitted && (
             <div
               className={`p-5 rounded-2xl border transition-all mt-6 ${
                 isCurrentCorrect
-                  ? 'bg-emerald-50/70 border-emerald-200 text-emerald-950'
-                  : 'bg-amber-50/80 border-amber-200 text-amber-950'
+                  ? 'bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/60 text-emerald-950 dark:text-emerald-200'
+                  : 'bg-amber-50/90 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800/60 text-amber-950 dark:text-amber-200'
               }`}
             >
               <div className="flex items-center gap-2 mb-2 font-semibold text-sm">
                 {isCurrentCorrect ? (
                   <>
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                     <span>Great job! Correct.</span>
                   </>
                 ) : (
                   <>
-                    <HelpCircle className="w-4 h-4 text-amber-600" />
+                    <HelpCircle className="w-4 h-4 text-amber-500" />
                     <span>Explanation & Key Concept:</span>
                   </>
                 )}
@@ -308,7 +308,7 @@ export const QuizPage: React.FC = () => {
               <p className="text-xs sm:text-sm leading-relaxed mb-3">{currentQ.explanation}</p>
 
               {currentQ.key_takeaway && (
-                <div className="pt-2.5 border-t border-black/5 text-xs flex items-center gap-1.5 opacity-90">
+                <div className="pt-2.5 border-t border-black/5 dark:border-white/10 text-xs flex items-center gap-1.5 opacity-90">
                   <Sparkles className="w-3.5 h-3.5 text-brand-orange" />
                   <span className="font-medium">Takeaway: {currentQ.key_takeaway}</span>
                 </div>
@@ -318,8 +318,8 @@ export const QuizPage: React.FC = () => {
 
           {/* Next Button Footer */}
           {isSubmitted && (
-            <div className="mt-8 pt-6 border-t border-brand-border flex items-center justify-between">
-              <span className="text-xs text-brand-muted">
+            <div className="mt-8 pt-6 border-t border-brand-border dark:border-brand-dark-border flex items-center justify-between">
+              <span className="text-xs text-brand-muted dark:text-brand-dark-muted">
                 {currentIndex === totalQuestions - 1
                   ? 'Last question complete!'
                   : `${totalQuestions - (currentIndex + 1)} questions remaining`}

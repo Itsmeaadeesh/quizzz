@@ -54,10 +54,10 @@ export const AuthPage: React.FC = () => {
         <div className="inline-block mb-4">
           <Logo size="lg" />
         </div>
-        <h2 className="text-2xl font-bold text-brand-ink">
+        <h2 className="text-2xl font-bold text-brand-ink dark:text-white">
           {isSignUp ? 'Create your study account' : 'Welcome back to StayAheadd'}
         </h2>
-        <p className="mt-2 text-sm text-brand-muted">
+        <p className="mt-2 text-sm text-brand-muted dark:text-brand-dark-muted">
           {isSignUp
             ? 'Start converting lecture slides and notes into instant quizzes.'
             : 'Access your saved study quizzes, results, and learning history.'}
@@ -65,10 +65,10 @@ export const AuthPage: React.FC = () => {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4">
-        <div className="card-soft bg-white p-8 sm:p-10 shadow-xl border-brand-border">
+        <div className="card-soft bg-white dark:bg-brand-dark-card dark:border-brand-dark-border p-8 sm:p-10 shadow-xl border-brand-border">
           {errorMsg && (
-            <div className="mb-5 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div className="mb-5 p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
               <span>{errorMsg}</span>
             </div>
           )}
@@ -76,40 +76,40 @@ export const AuthPage: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             {isSignUp && (
               <div>
-                <label className="block text-xs font-medium text-brand-muted mb-1">Full name</label>
+                <label className="block text-xs font-medium text-brand-muted dark:text-brand-dark-muted mb-1">Full name</label>
                 <div className="relative">
-                  <User className="w-4 h-4 text-brand-muted absolute left-3.5 top-3.5" />
+                  <User className="w-4 h-4 text-brand-muted dark:text-brand-dark-muted absolute left-3.5 top-3.5" />
                   <input
                     type="text"
                     required
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="Alex Morgan"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-brand-border text-sm focus:border-brand-blue focus:ring-1 focus:ring-brand-blue"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-brand-border dark:border-brand-dark-border dark:bg-brand-dark-surface dark:text-white dark:placeholder-slate-500 text-sm focus:border-brand-blue focus:ring-1 focus:ring-brand-blue transition-colors"
                   />
                 </div>
               </div>
             )}
 
             <div>
-              <label className="block text-xs font-medium text-brand-muted mb-1">Email address</label>
+              <label className="block text-xs font-medium text-brand-muted dark:text-brand-dark-muted mb-1">Email address</label>
               <div className="relative">
-                <Mail className="w-4 h-4 text-brand-muted absolute left-3.5 top-3.5" />
+                <Mail className="w-4 h-4 text-brand-muted dark:text-brand-dark-muted absolute left-3.5 top-3.5" />
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="student@university.edu"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-brand-border text-sm focus:border-brand-blue focus:ring-1 focus:ring-brand-blue"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-brand-border dark:border-brand-dark-border dark:bg-brand-dark-surface dark:text-white dark:placeholder-slate-500 text-sm focus:border-brand-blue focus:ring-1 focus:ring-brand-blue transition-colors"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-brand-muted mb-1">Password</label>
+              <label className="block text-xs font-medium text-brand-muted dark:text-brand-dark-muted mb-1">Password</label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-brand-muted absolute left-3.5 top-3.5" />
+                <Lock className="w-4 h-4 text-brand-muted dark:text-brand-dark-muted absolute left-3.5 top-3.5" />
                 <input
                   type="password"
                   required
@@ -117,7 +117,7 @@ export const AuthPage: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-brand-border text-sm focus:border-brand-blue focus:ring-1 focus:ring-brand-blue"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-brand-border dark:border-brand-dark-border dark:bg-brand-dark-surface dark:text-white dark:placeholder-slate-500 text-sm focus:border-brand-blue focus:ring-1 focus:ring-brand-blue transition-colors"
                 />
               </div>
             </div>
@@ -137,9 +137,9 @@ export const AuthPage: React.FC = () => {
 
           {/* Divider */}
           <div className="my-6 flex items-center gap-3">
-            <div className="flex-1 h-px bg-brand-border" />
-            <span className="text-xs text-brand-muted uppercase">or</span>
-            <div className="flex-1 h-px bg-brand-border" />
+            <div className="flex-1 h-px bg-brand-border dark:bg-brand-dark-border" />
+            <span className="text-xs text-brand-muted dark:text-brand-dark-muted uppercase">or</span>
+            <div className="flex-1 h-px bg-brand-border dark:bg-brand-dark-border" />
           </div>
 
           {/* Social / Guest options */}
@@ -173,7 +173,7 @@ export const AuthPage: React.FC = () => {
             <button
               type="button"
               onClick={handleGuest}
-              className="btn-pill bg-slate-100 hover:bg-slate-200 text-brand-ink text-xs sm:text-sm w-full py-2.5 flex items-center justify-center gap-2"
+              className="btn-pill bg-slate-100 dark:bg-brand-dark-surface hover:bg-slate-200 dark:hover:bg-brand-dark-card text-brand-ink dark:text-slate-200 text-xs sm:text-sm w-full py-2.5 flex items-center justify-center gap-2 border border-transparent dark:border-brand-dark-border"
             >
               <Sparkles className="w-4 h-4 text-brand-orange" />
               Continue as guest (No login required)
@@ -181,7 +181,7 @@ export const AuthPage: React.FC = () => {
           </div>
 
           {/* Toggle Login / Signup */}
-          <div className="mt-6 text-center text-xs text-brand-muted">
+          <div className="mt-6 text-center text-xs text-brand-muted dark:text-brand-dark-muted">
             {isSignUp ? (
               <span>
                 Already have an account?{' '}

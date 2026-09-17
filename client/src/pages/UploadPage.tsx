@@ -67,7 +67,7 @@ export const UploadPage: React.FC = () => {
 
       const s2 = setTimeout(() => {
         setGenerationProgress(65);
-        setGenerationStage('Formulating grounded questions with Gemini 2.0 Flash…');
+        setGenerationStage('Formulating grounded questions with Gemini AI…');
       }, 3500);
 
       const s3 = setTimeout(() => {
@@ -170,25 +170,25 @@ export const UploadPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-dots-pattern py-10 md:py-16">
+    <div className="min-h-screen bg-dots-pattern py-10 md:py-16 transition-colors">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Page Title */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-brand-blue-light text-brand-blue-dark text-xs font-semibold mb-3 border border-brand-blue/20">
+          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-brand-blue-light dark:bg-brand-blue/15 text-brand-blue-dark dark:text-brand-blue text-xs font-semibold mb-3 border border-brand-blue/20">
             <Sparkles className="w-3.5 h-3.5 text-brand-orange" />
             Study Material to Quiz
           </div>
-          <h1 className="text-3xl sm:text-4xl font-normal text-brand-ink">
+          <h1 className="text-3xl sm:text-4xl font-normal text-brand-ink dark:text-white">
             Upload notes and <span className="font-bold text-brand-blue">configure your quiz</span>
           </h1>
-          <p className="text-sm sm:text-base text-brand-muted mt-2 max-w-xl mx-auto">
+          <p className="text-sm sm:text-base text-brand-muted dark:text-brand-dark-muted mt-2 max-w-xl mx-auto">
             Choose your format preferences, select your document, and let StayAheadd build your study questions.
           </p>
         </div>
 
-        {/* Error message banner (in-voice) */}
+        {/* Error message banner */}
         {errorMessage && (
-          <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 flex items-start gap-3 shadow-sm animate-shake">
+          <div className="mb-6 p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/50 text-amber-900 dark:text-amber-200 flex items-start gap-3 shadow-sm animate-shake">
             <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
             <div className="text-sm leading-relaxed flex-1">
               <strong className="font-semibold">Notice: </strong>
@@ -206,14 +206,14 @@ export const UploadPage: React.FC = () => {
         {/* Main Form Container */}
         <div className="space-y-8">
           {/* Section 1: Material Input */}
-          <div className="card-soft bg-white p-6 sm:p-8">
-            <div className="flex items-center justify-between border-b border-brand-border pb-4 mb-6">
-              <h2 className="text-lg font-semibold text-brand-ink flex items-center gap-2">
+          <div className="card-soft bg-white dark:bg-brand-dark-card border-brand-border dark:border-brand-dark-border p-6 sm:p-8">
+            <div className="flex items-center justify-between border-b border-brand-border dark:border-brand-dark-border pb-4 mb-6">
+              <h2 className="text-lg font-semibold text-brand-ink dark:text-white flex items-center gap-2">
                 <FileUp className="w-5 h-5 text-brand-blue" />
                 1. Provide study material
               </h2>
 
-              <div className="inline-flex p-1 rounded-full bg-slate-100 border border-brand-border">
+              <div className="inline-flex p-1 rounded-full bg-slate-100 dark:bg-brand-dark-surface border border-brand-border dark:border-brand-dark-border">
                 <button
                   type="button"
                   onClick={() => {
@@ -222,8 +222,8 @@ export const UploadPage: React.FC = () => {
                   }}
                   className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
                     activeTab === 'upload'
-                      ? 'bg-white text-brand-ink shadow-xs'
-                      : 'text-brand-muted hover:text-brand-ink'
+                      ? 'bg-white dark:bg-brand-dark-card text-brand-ink dark:text-white shadow-xs'
+                      : 'text-brand-muted dark:text-brand-dark-muted hover:text-brand-ink dark:hover:text-white'
                   }`}
                 >
                   Upload file
@@ -236,8 +236,8 @@ export const UploadPage: React.FC = () => {
                   }}
                   className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
                     activeTab === 'paste'
-                      ? 'bg-white text-brand-ink shadow-xs'
-                      : 'text-brand-muted hover:text-brand-ink'
+                      ? 'bg-white dark:bg-brand-dark-card text-brand-ink dark:text-white shadow-xs'
+                      : 'text-brand-muted dark:text-brand-dark-muted hover:text-brand-ink dark:hover:text-white'
                   }`}
                 >
                   Paste text
@@ -264,33 +264,33 @@ export const UploadPage: React.FC = () => {
                     onClick={() => fileInputRef.current?.click()}
                     className={`border-2 border-dashed rounded-2xl p-8 sm:p-12 text-center cursor-pointer transition-all ${
                       isDragging
-                        ? 'border-brand-blue bg-brand-blue-subtle/80 scale-[1.01]'
-                        : 'border-brand-border hover:border-brand-blue/60 bg-slate-50/50 hover:bg-brand-blue-subtle/30'
+                        ? 'border-brand-blue bg-brand-blue-subtle/80 dark:bg-brand-blue/15 scale-[1.01]'
+                        : 'border-brand-border dark:border-brand-dark-border hover:border-brand-blue/60 dark:hover:border-brand-blue/70 bg-slate-50/50 dark:bg-brand-dark-surface/50 hover:bg-brand-blue-subtle/30 dark:hover:bg-brand-dark-surface'
                     }`}
                   >
-                    <div className="w-14 h-14 rounded-2xl bg-brand-blue-light text-brand-blue flex items-center justify-center mx-auto mb-4">
+                    <div className="w-14 h-14 rounded-2xl bg-brand-blue-light dark:bg-brand-blue/20 text-brand-blue flex items-center justify-center mx-auto mb-4">
                       <UploadCloud className="w-7 h-7" />
                     </div>
-                    <h3 className="text-base font-semibold text-brand-ink mb-1">
+                    <h3 className="text-base font-semibold text-brand-ink dark:text-white mb-1">
                       Drag & drop your study file here, or{' '}
                       <span className="text-brand-blue underline underline-offset-2">browse</span>
                     </h3>
-                    <p className="text-xs text-brand-muted max-w-sm mx-auto mb-4">
+                    <p className="text-xs text-brand-muted dark:text-brand-dark-muted max-w-sm mx-auto mb-4">
                       Supports PDF, PPTX (PowerPoint), DOCX (Word), and TXT documents.
                     </p>
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-brand-border text-[11px] text-brand-muted">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white dark:bg-brand-dark-card border border-brand-border dark:border-brand-dark-border text-[11px] text-brand-muted dark:text-slate-300">
                       Maximum file size: 10MB
                     </div>
                   </div>
                 ) : (
-                  <div className="p-4 sm:p-5 rounded-2xl border border-brand-blue/30 bg-brand-blue-subtle/40 flex items-center justify-between">
+                  <div className="p-4 sm:p-5 rounded-2xl border border-brand-blue/30 bg-brand-blue-subtle/40 dark:bg-brand-blue/10 flex items-center justify-between">
                     <div className="flex items-center gap-3.5">
                       <div className="w-12 h-12 rounded-xl bg-brand-blue text-white flex items-center justify-center">
                         <FileText className="w-6 h-6" />
                       </div>
                       <div>
-                        <div className="text-sm font-semibold text-brand-ink">{selectedFile.name}</div>
-                        <div className="text-xs text-brand-muted">
+                        <div className="text-sm font-semibold text-brand-ink dark:text-white">{selectedFile.name}</div>
+                        <div className="text-xs text-brand-muted dark:text-brand-dark-muted">
                           {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB • Ready for quiz generation
                         </div>
                       </div>
@@ -298,7 +298,7 @@ export const UploadPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setSelectedFile(null)}
-                      className="text-xs font-medium text-red-500 hover:text-red-700 px-3 py-1.5 rounded-full hover:bg-red-50 transition-colors"
+                      className="text-xs font-medium text-red-500 hover:text-red-700 px-3 py-1.5 rounded-full hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
                     >
                       Remove file
                     </button>
@@ -311,7 +311,7 @@ export const UploadPage: React.FC = () => {
             {activeTab === 'paste' && (
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs font-medium text-brand-muted mb-1">
+                  <label className="block text-xs font-medium text-brand-muted dark:text-brand-dark-muted mb-1">
                     Quiz title or subject name
                   </label>
                   <input
@@ -319,15 +319,15 @@ export const UploadPage: React.FC = () => {
                     value={sourceTitle}
                     onChange={(e) => setSourceTitle(e.target.value)}
                     placeholder="e.g. Cognitive Psychology Chapter 4"
-                    className="w-full px-4 py-2.5 rounded-xl border border-brand-border text-sm focus:border-brand-blue focus:ring-1 focus:ring-brand-blue"
+                    className="w-full px-4 py-2.5 rounded-xl border border-brand-border dark:border-brand-dark-border bg-white dark:bg-brand-dark-surface text-brand-ink dark:text-white text-sm focus:border-brand-blue focus:ring-1 focus:ring-brand-blue"
                   />
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <label className="block text-xs font-medium text-brand-muted">
+                    <label className="block text-xs font-medium text-brand-muted dark:text-brand-dark-muted">
                       Paste lecture notes or study concepts
                     </label>
-                    <span className="text-[11px] text-brand-muted">
+                    <span className="text-[11px] text-brand-muted dark:text-brand-dark-muted">
                       {pastedText.trim() ? `${pastedText.trim().split(/\s+/).length} words` : '0 words'}
                     </span>
                   </div>
@@ -336,7 +336,7 @@ export const UploadPage: React.FC = () => {
                     value={pastedText}
                     onChange={(e) => setPastedText(e.target.value)}
                     placeholder="Paste your paragraphs, definitions, lecture notes, or key concepts here..."
-                    className="w-full p-4 rounded-xl border border-brand-border text-sm leading-relaxed focus:border-brand-blue focus:ring-1 focus:ring-brand-blue placeholder:text-brand-muted/60"
+                    className="w-full p-4 rounded-xl border border-brand-border dark:border-brand-dark-border bg-white dark:bg-brand-dark-surface text-brand-ink dark:text-white text-sm leading-relaxed focus:border-brand-blue focus:ring-1 focus:ring-brand-blue placeholder:text-brand-muted/60 dark:placeholder:text-brand-dark-muted"
                   />
                 </div>
               </div>
@@ -344,8 +344,8 @@ export const UploadPage: React.FC = () => {
           </div>
 
           {/* Section 2: Quiz Configuration */}
-          <div className="card-soft bg-white p-6 sm:p-8">
-            <h2 className="text-lg font-semibold text-brand-ink flex items-center gap-2 border-b border-brand-border pb-4 mb-6">
+          <div className="card-soft bg-white dark:bg-brand-dark-card border-brand-border dark:border-brand-dark-border p-6 sm:p-8">
+            <h2 className="text-lg font-semibold text-brand-ink dark:text-white flex items-center gap-2 border-b border-brand-border dark:border-brand-dark-border pb-4 mb-6">
               <SlidersHorizontal className="w-5 h-5 text-brand-orange" />
               2. Quiz configuration
             </h2>
@@ -353,7 +353,7 @@ export const UploadPage: React.FC = () => {
             <div className="space-y-6">
               {/* Question Format Chips */}
               <div>
-                <label className="block text-xs font-semibold text-brand-ink uppercase tracking-wider mb-2.5">
+                <label className="block text-xs font-semibold text-brand-ink dark:text-slate-200 uppercase tracking-wider mb-2.5">
                   Question type
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
@@ -369,17 +369,17 @@ export const UploadPage: React.FC = () => {
                       onClick={() => setConfig({ ...config, questionType: item.id as QuestionType })}
                       className={`p-3 rounded-2xl border text-left transition-all ${
                         config.questionType === item.id
-                          ? 'border-brand-blue bg-brand-blue-subtle ring-2 ring-brand-blue/30 shadow-xs'
-                          : 'border-brand-border hover:border-brand-blue/40 bg-white'
+                          ? 'border-brand-blue bg-brand-blue-subtle dark:bg-brand-blue/20 ring-2 ring-brand-blue/30 shadow-xs'
+                          : 'border-brand-border dark:border-brand-dark-border hover:border-brand-blue/40 dark:hover:border-brand-blue/50 bg-white dark:bg-brand-dark-surface'
                       }`}
                     >
-                      <div className="text-xs font-semibold text-brand-ink flex items-center justify-between">
+                      <div className="text-xs font-semibold text-brand-ink dark:text-white flex items-center justify-between">
                         <span>{item.label}</span>
                         {config.questionType === item.id && (
                           <CheckCircle2 className="w-3.5 h-3.5 text-brand-blue" />
                         )}
                       </div>
-                      <div className="text-[11px] text-brand-muted mt-0.5">{item.desc}</div>
+                      <div className="text-[11px] text-brand-muted dark:text-brand-dark-muted mt-0.5">{item.desc}</div>
                     </button>
                   ))}
                 </div>
@@ -388,7 +388,7 @@ export const UploadPage: React.FC = () => {
               {/* Number of Questions Chips + Custom Slider */}
               <div>
                 <div className="flex items-center justify-between mb-2.5">
-                  <label className="text-xs font-semibold text-brand-ink uppercase tracking-wider">
+                  <label className="text-xs font-semibold text-brand-ink dark:text-slate-200 uppercase tracking-wider">
                     Number of questions
                   </label>
                   <span className="text-xs font-semibold text-brand-blue">
@@ -408,7 +408,7 @@ export const UploadPage: React.FC = () => {
                       className={`px-5 py-2 rounded-full text-xs font-medium transition-all ${
                         !isCustomCount && config.numQuestions === num
                           ? 'bg-brand-blue text-white shadow-pill'
-                          : 'bg-slate-100 text-brand-muted hover:bg-slate-200'
+                          : 'bg-slate-100 dark:bg-brand-dark-surface text-brand-muted dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-brand-dark-card border border-transparent dark:border-brand-dark-border'
                       }`}
                     >
                       {num} questions
@@ -420,7 +420,7 @@ export const UploadPage: React.FC = () => {
                     className={`px-5 py-2 rounded-full text-xs font-medium transition-all ${
                       isCustomCount
                         ? 'bg-brand-orange text-white shadow-md'
-                        : 'bg-slate-100 text-brand-muted hover:bg-slate-200'
+                        : 'bg-slate-100 dark:bg-brand-dark-surface text-brand-muted dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-brand-dark-card border border-transparent dark:border-brand-dark-border'
                     }`}
                   >
                     Custom count
@@ -428,10 +428,10 @@ export const UploadPage: React.FC = () => {
                 </div>
 
                 {isCustomCount && (
-                  <div className="mt-4 p-4 rounded-xl bg-slate-50 border border-brand-border">
-                    <div className="flex items-center justify-between text-xs text-brand-muted mb-2">
+                  <div className="mt-4 p-4 rounded-xl bg-slate-50 dark:bg-brand-dark-surface border border-brand-border dark:border-brand-dark-border">
+                    <div className="flex items-center justify-between text-xs text-brand-muted dark:text-brand-dark-muted mb-2">
                       <span>5 questions (quick drill)</span>
-                      <span className="font-bold text-brand-ink">{config.numQuestions} questions</span>
+                      <span className="font-bold text-brand-ink dark:text-white">{config.numQuestions} questions</span>
                       <span>40 questions (comprehensive)</span>
                     </div>
                     <input
@@ -449,7 +449,7 @@ export const UploadPage: React.FC = () => {
 
               {/* Difficulty Level Chips */}
               <div>
-                <label className="block text-xs font-semibold text-brand-ink uppercase tracking-wider mb-2.5">
+                <label className="block text-xs font-semibold text-brand-ink dark:text-slate-200 uppercase tracking-wider mb-2.5">
                   Target difficulty
                 </label>
                 <div className="grid grid-cols-3 gap-3">
@@ -464,12 +464,12 @@ export const UploadPage: React.FC = () => {
                       onClick={() => setConfig({ ...config, difficulty: level.id as Difficulty })}
                       className={`p-3 rounded-2xl border text-center transition-all ${
                         config.difficulty === level.id
-                          ? 'border-brand-blue bg-brand-blue-subtle ring-2 ring-brand-blue/30 shadow-xs'
-                          : 'border-brand-border hover:border-brand-blue/40 bg-white'
+                          ? 'border-brand-blue bg-brand-blue-subtle dark:bg-brand-blue/20 ring-2 ring-brand-blue/30 shadow-xs'
+                          : 'border-brand-border dark:border-brand-dark-border hover:border-brand-blue/40 dark:hover:border-brand-blue/50 bg-white dark:bg-brand-dark-surface'
                       }`}
                     >
-                      <div className="text-xs font-semibold text-brand-ink">{level.label}</div>
-                      <div className="text-[11px] text-brand-muted mt-0.5">{level.desc}</div>
+                      <div className="text-xs font-semibold text-brand-ink dark:text-white">{level.label}</div>
+                      <div className="text-[11px] text-brand-muted dark:text-brand-dark-muted mt-0.5">{level.desc}</div>
                     </button>
                   ))}
                 </div>
@@ -489,25 +489,25 @@ export const UploadPage: React.FC = () => {
                 Generate quiz from notes
               </button>
             ) : (
-              <div className="card-soft bg-white max-w-lg mx-auto p-6 text-left border-brand-blue/40 shadow-xl">
+              <div className="card-soft bg-white dark:bg-brand-dark-card max-w-lg mx-auto p-6 text-left border-brand-blue/40 shadow-xl">
                 <div className="flex items-center justify-between mb-3">
                   <div className="inline-flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full bg-brand-blue animate-ping" />
-                    <span className="text-xs font-semibold text-brand-blue-dark">
+                    <span className="text-xs font-semibold text-brand-blue-dark dark:text-brand-blue">
                       Generating quiz… {generationProgress}%
                     </span>
                   </div>
-                  <span className="text-xs text-brand-muted">Estimated time: 5-10s</span>
+                  <span className="text-xs text-brand-muted dark:text-brand-dark-muted">Estimated time: 5-10s</span>
                 </div>
 
-                <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden mb-3">
+                <div className="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden mb-3">
                   <div
                     className="bg-brand-blue h-full transition-all duration-500 rounded-full"
                     style={{ width: `${generationProgress}%` }}
                   />
                 </div>
 
-                <div className="text-xs text-brand-muted flex items-center gap-2">
+                <div className="text-xs text-brand-muted dark:text-brand-dark-muted flex items-center gap-2">
                   <Sparkles className="w-3.5 h-3.5 text-brand-orange animate-spin" />
                   <span>{generationStage}</span>
                 </div>

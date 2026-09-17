@@ -11,7 +11,7 @@ import { AuthPage } from './pages/AuthPage';
 
 export const App: React.FC = () => {
   return (
-    <div className="min-h-screen flex flex-col bg-white text-brand-ink selection:bg-brand-blue/20 selection:text-brand-ink">
+    <div className="min-h-screen flex flex-col bg-white dark:bg-brand-dark-bg text-brand-ink dark:text-slate-100 selection:bg-brand-blue/20 selection:text-brand-ink transition-colors duration-200">
       <Navbar />
       <main className="flex-1">
         <Routes>
