@@ -5,27 +5,27 @@ import { Heart, Sparkles } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="border-t border-brand-border bg-white mt-auto">
+    <footer className="border-t border-brand-border dark:border-brand-dark-border bg-white dark:bg-brand-dark-bg mt-auto transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
           {/* Col 1: Brand & Mission */}
           <div className="md:col-span-2 space-y-4">
             <Logo size="md" />
-            <p className="text-sm text-brand-muted max-w-sm leading-relaxed">
+            <p className="text-sm text-brand-muted dark:text-brand-dark-muted max-w-sm leading-relaxed">
               StayAheadd helps students and lifelong learners transform dense study materials, lecture slides, and notes into interactive, concept-grounded quizzes in seconds.
             </p>
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-blue-subtle border border-brand-blue/20 text-xs text-brand-blue-dark">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-blue-subtle dark:bg-brand-blue/10 border border-brand-blue/20 text-xs text-brand-blue-dark dark:text-brand-blue">
               <Sparkles className="w-3.5 h-3.5 text-brand-orange" />
-              Powered by Gemini 2.0 Flash AI
+              Powered by Gemini 3.6 Flash AI
             </div>
           </div>
 
           {/* Col 2: Navigation */}
           <div>
-            <h4 className="text-xs font-semibold text-brand-ink uppercase tracking-wider mb-4">
+            <h4 className="text-xs font-semibold text-brand-ink dark:text-white uppercase tracking-wider mb-4">
               Platform
             </h4>
-            <ul className="space-y-2.5 text-sm text-brand-muted">
+            <ul className="space-y-2.5 text-sm text-brand-muted dark:text-brand-dark-muted">
               <li>
                 <Link to="/upload" className="hover:text-brand-blue transition-colors">
                   Upload study material
@@ -51,10 +51,10 @@ export const Footer: React.FC = () => {
 
           {/* Col 3: Supported Formats */}
           <div>
-            <h4 className="text-xs font-semibold text-brand-ink uppercase tracking-wider mb-4">
+            <h4 className="text-xs font-semibold text-brand-ink dark:text-white uppercase tracking-wider mb-4">
               Supported material
             </h4>
-            <ul className="space-y-2.5 text-sm text-brand-muted">
+            <ul className="space-y-2.5 text-sm text-brand-muted dark:text-brand-dark-muted">
               <li className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-red-400"></span>
                 <span>PDF documents & ebooks</span>
@@ -76,16 +76,16 @@ export const Footer: React.FC = () => {
         </div>
 
         {/* Bottom bar */}
-        <div className="pt-8 border-t border-brand-border flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-brand-muted">
+        <div className="pt-8 border-t border-brand-border dark:border-brand-dark-border flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-brand-muted dark:text-brand-dark-muted">
           <p>© {new Date().getFullYear()} StayAheadd. Designed for focused learning.</p>
           <div className="flex items-center gap-6">
             <span className="inline-flex items-center gap-1">
               Built for students with <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />
             </span>
-            <a href="#privacy" className="hover:text-brand-ink transition-colors">
+            <a href="#privacy" className="hover:text-brand-ink dark:hover:text-white transition-colors">
               Privacy policy
             </a>
-            <a href="#terms" className="hover:text-brand-ink transition-colors">
+            <a href="#terms" className="hover:text-brand-ink dark:hover:text-white transition-colors">
               Terms of service
             </a>
           </div>

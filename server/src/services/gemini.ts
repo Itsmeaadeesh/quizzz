@@ -5,7 +5,12 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
 
 /**
- * Generates structured JSON quiz using Gemini 2.0 Flash
+ * Supported Gemini models in priority order
+ */
+const PREFERRED_MODELS = ['gemini-3.6-flash', 'gemini-2.5-flash', 'gemini-2.0-flash'];
+
+/**
+ * Generates structured JSON quiz using Gemini API
  */
 export async function generateQuizWithGemini(
   content: string,
@@ -19,23 +24,27 @@ export async function generateQuizWithGemini(
     return generateFallbackQuiz(content, config, sourceName, sourceType);
   }
 
-  // Attempt generation with single-retry logic
-  try {
-    return await attemptGeminiGeneration(content, config, sourceName, sourceType, false);
-  } catch (initialError: any) {
-    console.warn('Initial Gemini generation encountered an issue, retrying once...', initialError.message);
+  // Attempt generation with model fallback & single-retry logic
+  for (const modelName of PREFERRED_MODELS) {
     try {
-      return await attemptGeminiGeneration(content, config, sourceName, sourceType, true);
-    } catch (retryError: any) {
-      console.error('Gemini retry failed:', retryError);
-      // If quota exceeded or network fails, fall back gracefully to keep user unblocked
-      console.warn('Falling back to structured local concept generator.');
-      return generateFallbackQuiz(content, config, sourceName, sourceType);
+      return await attemptGeminiGeneration(modelName, content, config, sourceName, sourceType, false);
+    } catch (initialError: any) {
+      console.warn(`Attempt with ${modelName} encountered an issue:`, initialError.message);
+      try {
+        return await attemptGeminiGeneration(modelName, content, config, sourceName, sourceType, true);
+      } catch (retryError: any) {
+        console.warn(`Retry with ${modelName} failed, attempting next model...`);
+      }
     }
   }
+
+  // If all models encounter issues, fallback gracefully so user has zero interruption
+  console.warn('All Gemini model calls exhausted, using structured fallback concept generator.');
+  return generateFallbackQuiz(content, config, sourceName, sourceType);
 }
 
 async function attemptGeminiGeneration(
+  modelName: string,
   content: string,
   config: QuizConfig,
   sourceName: string,
@@ -43,7 +52,7 @@ async function attemptGeminiGeneration(
   isRetry: boolean
 ): Promise<GeneratedQuiz> {
   const model = genAI!.getGenerativeModel({
-    model: 'gemini-2.0-flash',
+    model: modelName,
     generationConfig: {
       responseMimeType: 'application/json',
       temperature: isRetry ? 0.3 : 0.4,
@@ -96,7 +105,6 @@ RULES:
 
   let parsed: any;
   try {
-    // Strip accidental code block backticks if any
     const cleanedJson = textResponse.replace(/^```json\s*/i, '').replace(/\s*```$/i, '').trim();
     parsed = JSON.parse(cleanedJson);
   } catch (err: any) {
@@ -107,7 +115,6 @@ RULES:
     throw new Error('Gemini output missing questions array');
   }
 
-  // Sanitize and validate questions
   const validatedQuestions: QuizQuestion[] = parsed.questions.map((q: any, idx: number) => {
     let qType: 'mcq' | 'true_false' | 'short_answer' = 'mcq';
     if (config.questionType === 'true_false') qType = 'true_false';
@@ -145,8 +152,7 @@ RULES:
 }
 
 /**
- * Intelligent fallback generator that builds structured quiz questions directly
- * from key sentences and concepts when running without API keys or during offline tests.
+ * Fallback generator for zero-latency preview
  */
 function generateFallbackQuiz(
   content: string,
@@ -154,7 +160,6 @@ function generateFallbackQuiz(
   sourceName: string,
   sourceType: string
 ): GeneratedQuiz {
-  // Extract sentences with substance
   const sentences = content
     .split(/[.!?]+/)
     .map((s) => s.trim())
@@ -204,14 +209,12 @@ function generateFallbackQuiz(
         key_takeaway: `Key takeaway: ${keyWord} is central to ${cleanTitle}.`,
       });
     } else {
-      // MCQ
       const options = [
         sentence,
         `It is unrelated to ${keyWord} in these lecture notes`,
         `It applies only during secondary preliminary phases`,
         `None of the above statements are supported by the notes`,
       ];
-      // Randomize option order
       const correct = options[0];
       const shuffled = [...options].sort(() => Math.random() - 0.5);
 

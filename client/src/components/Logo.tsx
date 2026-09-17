@@ -1,29 +1,34 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useTheme } from '../context/ThemeContext';
 
 interface LogoProps {
-  variant?: 'light' | 'dark' | 'icon-only';
+  variant?: 'light' | 'dark' | 'icon-only' | 'auto';
   className?: string;
   size?: 'sm' | 'md' | 'lg';
   asLink?: boolean;
 }
 
 export const Logo: React.FC<LogoProps> = ({
-  variant = 'light',
+  variant = 'auto',
   className = '',
   size = 'md',
   asLink = true,
 }) => {
+  const { theme } = useTheme();
+
   const heightClasses = {
     sm: 'h-7',
     md: 'h-9 md:h-10',
     lg: 'h-12 md:h-14',
   };
 
+  const effectiveVariant = variant === 'auto' ? theme : variant;
+
   const imageSrc =
-    variant === 'icon-only'
+    effectiveVariant === 'icon-only'
       ? '/favicon.png'
-      : variant === 'dark'
+      : effectiveVariant === 'dark'
       ? '/stayaheadd-logo-dark.png'
       : '/stayaheadd-logo-light.png';
 
