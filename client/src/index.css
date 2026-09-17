@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --brand-blue: #22C3F4;
+    --brand-blue-dark: #1C8FBF;
+    --brand-orange: #FAA722;
+    --brand-ink: #14181F;
+    --brand-muted: #5B6472;
+    --brand-border: #E7ECF1;
+  }
+
+  body {
+    background-color: #FFFFFF;
+    color: #14181F;
+    font-family: 'Poppins', 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Dotted background pattern for hero and accent sections */
+.bg-dots-pattern {
+  background-color: #FFFFFF;
+  background-image: radial-gradient(#22C3F4 0.75px, transparent 0.75px), radial-gradient(#22C3F4 0.75px, #FFFFFF 0.75px);
+  background-size: 24px 24px;
+  background-position: 0 0, 12px 12px;
+  background-opacity: 0.15;
+}
+
+/* Custom Pill Button Styles */
+.btn-pill {
+  @apply inline-flex items-center justify-center font-medium rounded-full px-6 py-3 transition-all duration-200 cursor-pointer text-sm md:text-base select-none;
+}
+
+.btn-pill-primary {
+  @apply btn-pill bg-brand-blue text-white shadow-pill hover:bg-brand-blue-dark active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.btn-pill-orange {
+  @apply btn-pill bg-brand-orange text-white shadow-md hover:bg-brand-orange-hover active:scale-[0.98];
+}
+
+.btn-pill-outline {
+  @apply btn-pill border border-brand-border bg-white text-brand-ink hover:border-brand-blue/60 hover:text-brand-blue hover:bg-brand-blue-subtle/50 active:scale-[0.98];
+}
+
+.btn-pill-ghost {
+  @apply btn-pill bg-transparent text-brand-muted hover:text-brand-ink hover:bg-slate-100/70;
+}
+
+/* Soft rounded card standard (16-20px radius) */
+.card-soft {
+  @apply rounded-2xl border border-brand-border bg-white p-6 shadow-soft transition-all duration-200 hover:shadow-soft-hover hover:border-brand-blue/30;
+}
+
+/* Accessibility: focus ring */
+*:focus-visible {
+  outline: 2px solid #22C3F4;
+  outline-offset: 2px;
+}
+
+/* Accessibility: respect user prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
