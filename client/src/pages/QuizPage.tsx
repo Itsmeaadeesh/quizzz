@@ -60,13 +60,47 @@ export const QuizPage: React.FC = () => {
   const totalQuestions = quiz.questions.length;
   const progressPercentage = ((currentIndex + 1) / totalQuestions) * 100;
 
+  // Helper to normalize answer strings (strips "A) ", "1. ", whitespace, case)
+  const normalizeAnswer = (val?: string) =>
+    (val || '').replace(/^[A-Da-d1-4][\)\.\:\-]\s*/, '').trim().toLowerCase();
+
+  // Robustly extract and normalize options from current question
+  const rawOptions = Array.isArray(currentQ.options)
+    ? currentQ.options
+    : typeof currentQ.options === 'object' && currentQ.options !== null
+    ? Object.values(currentQ.options)
+    : [];
+
+  let effectiveOptions: string[] = rawOptions.map(String).map((s) => s.trim()).filter(Boolean);
+
+  // If question is MCQ or True/False but has missing/fewer options, synthesize options so user is NEVER blocked!
+  if (effectiveOptions.length < 2 && currentQ.type !== 'short_answer') {
+    if (currentQ.type === 'true_false') {
+      effectiveOptions = ['True', 'False'];
+    } else if (currentQ.correct_answer && currentQ.correct_answer.trim()) {
+      effectiveOptions = [
+        currentQ.correct_answer.trim(),
+        'None of the above',
+        'All of the above',
+        'Alternative option not specified in the text',
+      ].sort(() => Math.random() - 0.5);
+    }
+  }
+
+  const renderAsOptions =
+    (currentQ.type === 'mcq' || currentQ.type === 'true_false' || effectiveOptions.length >= 2) &&
+    effectiveOptions.length >= 2;
+
   // Handle option select for MCQ & True/False
   const handleSelectOption = (option: string) => {
     if (isSubmitted) return;
     setSelectedOption(option);
     setIsSubmitted(true);
 
-    const isCorrect = option.trim().toLowerCase() === currentQ.correct_answer.trim().toLowerCase();
+    const isCorrect =
+      normalizeAnswer(option) === normalizeAnswer(currentQ.correct_answer) ||
+      option.trim().toLowerCase() === currentQ.correct_answer.trim().toLowerCase();
+
     setUserAnswers((prev) => [
       ...prev,
       {
@@ -85,11 +119,13 @@ export const QuizPage: React.FC = () => {
     setSelectedOption(shortAnswerInput.trim());
     setIsSubmitted(true);
 
-    const cleanUser = shortAnswerInput.toLowerCase();
-    const cleanCorrect = currentQ.correct_answer.toLowerCase();
+    const cleanUser = normalizeAnswer(shortAnswerInput);
+    const cleanCorrect = normalizeAnswer(currentQ.correct_answer);
     const correctKeywords = cleanCorrect.split(/\s+/).filter((w) => w.length > 3);
     const matches = correctKeywords.filter((w) => cleanUser.includes(w));
-    const isCorrect = matches.length >= Math.max(1, Math.floor(correctKeywords.length * 0.3));
+    const isCorrect =
+      cleanUser === cleanCorrect ||
+      matches.length >= Math.max(1, Math.floor(correctKeywords.length * 0.3));
 
     setUserAnswers((prev) => [
       ...prev,
@@ -140,7 +176,8 @@ export const QuizPage: React.FC = () => {
 
   const isCurrentCorrect =
     selectedOption &&
-    (selectedOption.trim().toLowerCase() === currentQ.correct_answer.trim().toLowerCase() ||
+    (normalizeAnswer(selectedOption) === normalizeAnswer(currentQ.correct_answer) ||
+      selectedOption.trim().toLowerCase() === currentQ.correct_answer.trim().toLowerCase() ||
       userAnswers.find((a) => a.questionId === currentQ.id)?.isCorrect);
 
   return (
@@ -182,10 +219,10 @@ export const QuizPage: React.FC = () => {
           <div className="mb-4 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-brand-dark-surface text-brand-muted dark:text-slate-300 text-xs font-medium border border-transparent dark:border-brand-dark-border">
             <HelpCircle className="w-3.5 h-3.5 text-brand-blue" />
             <span className="capitalize">
-              {currentQ.type === 'mcq'
-                ? 'Multiple choice'
-                : currentQ.type === 'true_false'
-                ? 'True / False'
+              {renderAsOptions
+                ? currentQ.type === 'true_false'
+                  ? 'True / False'
+                  : 'Multiple choice'
                 : 'Short answer'}
             </span>
           </div>
@@ -195,11 +232,12 @@ export const QuizPage: React.FC = () => {
           </h2>
 
           {/* OPTIONS: MCQ & TRUE/FALSE (Large thumb targets >= 56px) */}
-          {(currentQ.type === 'mcq' || currentQ.type === 'true_false') && currentQ.options && (
+          {renderAsOptions && (
             <div className="space-y-3 sm:space-y-3.5 mb-6">
-              {currentQ.options.map((option, idx) => {
+              {effectiveOptions.map((option, idx) => {
                 const isSelected = selectedOption === option;
                 const isCorrectOption =
+                  normalizeAnswer(option) === normalizeAnswer(currentQ.correct_answer) ||
                   option.trim().toLowerCase() === currentQ.correct_answer.trim().toLowerCase();
 
                 let buttonStyles =
@@ -253,8 +291,8 @@ export const QuizPage: React.FC = () => {
             </div>
           )}
 
-          {/* SHORT ANSWER */}
-          {currentQ.type === 'short_answer' && (
+          {/* SHORT ANSWER (Also serves as seamless fallback if no options available) */}
+          {!renderAsOptions && (
             <form onSubmit={handleShortAnswerSubmit} className="space-y-4 mb-6">
               {!isSubmitted ? (
                 <div>

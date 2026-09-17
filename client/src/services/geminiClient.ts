@@ -171,36 +171,13 @@ REQUIRED JSON STRUCTURE:
         throw new Error('Gemini output missing questions array');
       }
 
-      // Validate questions & shuffle MCQ options so correct answers are randomly distributed
-      const validatedQuestions: QuizQuestion[] = parsed.questions.map((q: any, idx: number) => {
-        let qType: 'mcq' | 'true_false' | 'short_answer' = 'mcq';
-        if (config.questionType === 'true_false') qType = 'true_false';
-        else if (config.questionType === 'short_answer') qType = 'short_answer';
-        else if (config.questionType === 'mixed') {
-          qType = q.type && ['mcq', 'true_false', 'short_answer'].includes(q.type) ? q.type : 'mcq';
-        }
-
-        let options = Array.isArray(q.options) ? q.options.map(String) : undefined;
-        let correctAnswer = String(q.correct_answer || (options ? options[0] : ''));
-
-        if (qType === 'mcq' && options && options.length >= 2) {
-          // Shuffle options randomly
-          options = [...options].sort(() => Math.random() - 0.5);
-        } else if (qType === 'true_false') {
-          options = ['True', 'False'];
-        }
-
-        return {
-          id: idx + 1,
-          type: qType,
-          question: String(q.question || `Question ${idx + 1}`),
-          options,
-          correct_answer: correctAnswer,
-          explanation: String(q.explanation || 'Review this concept from your study notes.'),
-          difficulty: config.difficulty,
-          key_takeaway: q.key_takeaway ? String(q.key_takeaway) : undefined,
-        };
-      });
+      // Validate and robustly normalize questions so options are NEVER missing or empty
+      const validatedQuestions = normalizeQuestions(
+        parsed.questions,
+        config.difficulty,
+        sourceName,
+        config.questionType
+      );
 
       const quizId = `quiz_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
       const generatedQuiz: GeneratedQuiz = {
@@ -240,3 +217,123 @@ REQUIRED JSON STRUCTURE:
 
   throw lastError || new Error('All Gemini models encountered high demand. Please try again in a moment.');
 }
+
+/**
+ * Normalizes raw Gemini question outputs into strictly formatted QuizQuestion objects.
+ * Guarantees that every MCQ has at least 4 valid options, that True/False has ['True', 'False'],
+ * and handles any alternate field names (choices, answers, options as dict, etc.).
+ */
+function normalizeQuestions(
+  rawQuestions: any[],
+  defaultDifficulty: any,
+  sourceName: string,
+  preferredType: string
+): QuizQuestion[] {
+  return rawQuestions.map((q: any, idx: number) => {
+    // 1. Determine question type
+    let rawType = String(q.type || '').toLowerCase().trim();
+    let qType: 'mcq' | 'true_false' | 'short_answer' = 'mcq';
+
+    if (preferredType === 'true_false' || rawType.includes('true') || rawType.includes('false') || rawType === 'tf') {
+      qType = 'true_false';
+    } else if (
+      preferredType === 'short_answer' ||
+      rawType.includes('short') ||
+      rawType.includes('text') ||
+      rawType.includes('open')
+    ) {
+      qType = 'short_answer';
+    } else {
+      qType = 'mcq';
+    }
+
+    // 2. Extract options from all possible variations
+    let options: string[] = [];
+    const candidateOptions = q.options || q.choices || q.answers || q.possible_answers || q.selections;
+
+    if (Array.isArray(candidateOptions)) {
+      options = candidateOptions.map(String).map((s) => s.trim()).filter(Boolean);
+    } else if (typeof candidateOptions === 'object' && candidateOptions !== null) {
+      options = Object.values(candidateOptions).map(String).map((s) => s.trim()).filter(Boolean);
+    } else if (typeof candidateOptions === 'string') {
+      options = candidateOptions.split(/\n|,/).map((s) => s.trim()).filter(Boolean);
+    }
+
+    // If distractors array is provided alongside correct_answer
+    if (
+      options.length === 0 &&
+      Array.isArray(q.distractors) &&
+      q.distractors.length > 0 &&
+      (q.correct_answer || q.answer)
+    ) {
+      options = [String(q.correct_answer || q.answer), ...q.distractors.map(String)];
+    }
+
+    // Strip "A) ", "1. " from raw correct answer & options
+    const stripPrefix = (s: string) => s.replace(/^[A-Da-d1-4][\)\.\:\-]\s*/, '').trim();
+
+    options = options.map(stripPrefix).filter(Boolean);
+    let correctAnswer = stripPrefix(
+      String(q.correct_answer || q.answer || q.correctAnswer || (options.length > 0 ? options[0] : ''))
+    );
+
+    // 3. For True/False, guarantee exactly ['True', 'False']
+    if (qType === 'true_false') {
+      options = ['True', 'False'];
+      const cleanAns = correctAnswer.toLowerCase();
+      correctAnswer = cleanAns.startsWith('f') ? 'False' : 'True';
+    }
+
+    // 4. For MCQ, GUARANTEE AT LEAST 4 VALID OPTIONS!
+    if (qType === 'mcq') {
+      // If options are missing or fewer than 2:
+      if (options.length < 2) {
+        if (correctAnswer && correctAnswer.length > 1) {
+          options = [
+            correctAnswer,
+            'None of the above',
+            'All of the above',
+            `Secondary reference tool not highlighted in ${sourceName.replace(/\.[^/.]+$/, '')}`,
+          ];
+        } else {
+          // If completely no options and no answer, switch to short answer so input is rendered
+          qType = 'short_answer';
+          options = [];
+        }
+      }
+
+      if (options.length >= 2) {
+        // Ensure correct answer is included in options
+        const matchIdx = options.findIndex(
+          (opt) => opt.toLowerCase() === correctAnswer.toLowerCase()
+        );
+        if (matchIdx === -1 && correctAnswer) {
+          options[0] = correctAnswer;
+        }
+
+        // Fill up to 4 options if between 2 and 3
+        if (options.length === 2) {
+          options.push('Both of the above');
+          options.push('None of the above');
+        } else if (options.length === 3) {
+          options.push('None of the above');
+        }
+
+        // Shuffle options randomly so correct answer is in random position
+        options = [...options].sort(() => Math.random() - 0.5);
+      }
+    }
+
+    return {
+      id: idx + 1,
+      type: qType,
+      question: String(q.question || q.prompt || q.title || `Question ${idx + 1}`),
+      options: options.length > 0 ? options : undefined,
+      correct_answer: correctAnswer || (options.length > 0 ? options[0] : 'See explanation'),
+      explanation: String(q.explanation || q.rationale || 'Review this key concept from your notes.'),
+      difficulty: q.difficulty || defaultDifficulty,
+      key_takeaway: q.key_takeaway ? String(q.key_takeaway) : undefined,
+    };
+  });
+}
+
