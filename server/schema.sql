@@ -1,6 +1,6 @@
 -- ==============================================================================
 -- StayAheadd Database Schema (Supabase / PostgreSQL)
--- Run this in your Supabase SQL Editor: https://supabase.com/dashboard/project/_/sql
+-- Fully idempotent: safe to run multiple times without 42710 errors
 -- ==============================================================================
 
 -- Enable UUID extension
@@ -41,12 +41,16 @@ create index if not exists idx_quiz_attempts_quiz on public.quiz_attempts(quiz_i
 alter table public.quizzes enable row level security;
 alter table public.quiz_attempts enable row level security;
 
--- Policies for quizzes
+-- Drop existing policies before creating to ensure idempotence
+drop policy if exists "Allow public read of quizzes" on public.quizzes;
+drop policy if exists "Allow insert to quizzes" on public.quizzes;
+drop policy if exists "Allow users to update own quizzes" on public.quizzes;
+
 create policy "Allow public read of quizzes"
     on public.quizzes for select
     using (true);
 
-create policy "Allow authenticated and anonymous insert to quizzes"
+create policy "Allow insert to quizzes"
     on public.quizzes for insert
     with check (true);
 
@@ -54,7 +58,10 @@ create policy "Allow users to update own quizzes"
     on public.quizzes for update
     using (auth.uid() = user_id or user_id is null);
 
--- Policies for quiz attempts
+-- Drop existing attempt policies before creating
+drop policy if exists "Allow users to view own attempts or public" on public.quiz_attempts;
+drop policy if exists "Allow users to insert attempts" on public.quiz_attempts;
+
 create policy "Allow users to view own attempts or public"
     on public.quiz_attempts for select
     using (true);
